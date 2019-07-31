@@ -1,0 +1,44 @@
+<!-- chat/templates/matches/lobby.html -->
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Chess Lobby</title>
+</head>
+<body>
+  <textarea id="match-log" cols="100" rows="20"></textarea><br/>
+  <input id="message-input" type="text" size="100"/><br/>
+  <input id="message-submit" type="button" value="Send"/>
+</body>
+<script>
+  var chatSocket = new WebSocket(
+    'ws://' + window.location.host + window.location.pathname + '?323eb1181cd1316b34f78f3c80944bc663135327'
+  );
+
+  chatSocket.onmessage = (event) => {
+    var data = JSON.parse(event.data);
+    var msg = data['message'];
+    console.log(msg);
+    document.querySelector('#match-log').value += (msg + '\n');
+  }
+
+  chatSocket.onclose = (event) => {
+    console.error('Chat socket closed unexpectedly');
+  }
+
+  chatSocket.onopen = (event) => {
+    console.log('Chat socket opened');
+  }
+
+  document.querySelector('#message-submit').onclick = (event) => {
+    event.preventDefault();
+    var msgInput = document.querySelector('#message-input');
+    var msg = msgInput.value;
+    chatSocket.send(JSON.stringify({
+      'message': msg
+    }));
+
+    msgInput.value = '';
+  }
+</script>
+</html>
