@@ -11,9 +11,13 @@
   <input id="message-submit" type="button" value="Send"/>
 </body>
 <script>
-  var chatSocket = new WebSocket(
+  /*var chatSocket = new WebSocket(
     'ws://' + window.location.host + window.location.pathname + '?323eb1181cd1316b34f78f3c80944bc663135327'
-  );
+  );*/
+
+  var chatSocket = new WebSocket(
+    'ws://67.205.171.177/ws/chess/matches/lobby/19/?eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxLCJ1c2VybmFtZSI6ImFkbWluIiwiZXhwIjoxNTY0NzgyMTY5LCJlbWFpbCI6ImhhcnRsZXkubjEyQGdtYWlsLmNvbSJ9.fIXVM2dsnlEj_UEoZwlm1JF_9UepiXtax2do0Eafbi0'
+  )
 
   chatSocket.onmessage = (event) => {
     var data = JSON.parse(event.data);
