@@ -36,7 +36,7 @@ class ChessMatchConsumer(WebsocketConsumer):
     match = ChessMatch.objects.get(pk=self.match_id)
     users = match.users.values()
     for user in users:
-      if self.user['user_id'] == user['id']:  # Changed user['id'] to user['user_id'] for use with JWT middleware
+      if self.user['user_id'] == user['id']:  # Changed self.user['id'] to self.user['user_id'] for use with JWT middleware
         return True
     return False
 
@@ -60,11 +60,10 @@ class ChessMatchConsumer(WebsocketConsumer):
       # To accept the connection call:
       self.accept()
       self.send(text_data=json.dumps({
-        'message': f'Hello {self.user}!'
+        'message': f'Hello {self.user["username"]}!'
       }))
     else:
       self.close()
-    
 
   def receive(self, text_data=None, bytes_data=None):
     # Called with either text_data or bytes_data for each frame

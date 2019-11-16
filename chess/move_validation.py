@@ -15,26 +15,70 @@ class MoveValidator:
     self.forward_movement = -1 if self.piece.team == 'B' else 1
     self.en_passant_row = 3 if self.piece.team == 'B' else 4
 
+    self.UNLIMITED_RANGE = 8
+    self.MOVE_RIGHT = 1
+    self.MOVE_LEFT = -1
+    self.MOVE_UP = 1
+    self.MOVE_DOWN = -1 
+
   def _build_pawn_move_set(self):
     move_set = []
-    range_limit = 1
+    vertical_range_limit = 1
     if self._pawn_can_double_jump():
-      range_limit += 1
-    move_set.extend(self._find_vertical_squares(range_limit=range_limit, direction_flag=self.forward_movement))
-    move_set.extend(self._find_diagonal_squares(range_limit=1, x_direction_flag=1, y_direction_flag=self.forward_movement))
-    move_set.extend(self._find_diagonal_squares(range_limit=1, x_direction_flag=-1, y_direction_flag=self.forward_movement))
+      vertical_range_limit += 1
+    move_set.extend(self._find_vertical_squares(range_limit=vertical_range_limit, direction_flag=self.forward_movement))
+    move_set.extend(self._find_diagonal_squares(range_limit=1, x_direction_flag=self.MOVE_RIGHT, y_direction_flag=self.forward_movement))
+    move_set.extend(self._find_diagonal_squares(range_limit=1, x_direction_flag=self.MOVE_LEFT, y_direction_flag=self.forward_movement))
     if self.piece.row == self.en_passant_row:
       move_set.extend(self._find_en_passant_squares())
     return move_set
 
   def _build_bishop_move_set(self):
     move_set = []
-    move_set.extend(self._find_diagonal_squares(range_limit=8, x_direction_flag=1, y_direction_flag=1))
-    move_set.extend(self._find_diagonal_squares(range_limit=8, x_direction_flag=-1, y_direction_flag=1))
-    move_set.extend(self._find_diagonal_squares(range_limit=8, x_direction_flag=1, y_direction_flag=-1))
-    move_set.extend(self._find_diagonal_squares(range_limit=8, x_direction_flag=-1, y_direction_flag=-1))
+    move_set.extend(self._find_diagonal_squares(range_limit=self.UNLIMITED_RANGE, x_direction_flag=self.MOVE_RIGHT, y_direction_flag=self.MOVE_UP))
+    move_set.extend(self._find_diagonal_squares(range_limit=self.UNLIMITED_RANGE, x_direction_flag=self.MOVE_LEFT, y_direction_flag=self.MOVE_UP))
+    move_set.extend(self._find_diagonal_squares(range_limit=self.UNLIMITED_RANGE, x_direction_flag=self.MOVE_RIGHT, y_direction_flag=self.MOVE_DOWN))
+    move_set.extend(self._find_diagonal_squares(range_limit=self.UNLIMITED_RANGE, x_direction_flag=self.MOVE_LEFT, y_direction_flag=self.MOVE_DOWN))
     return move_set
-  
+
+  def _build_knight_move_set(self):
+    move_set = []
+    moveset.extend(self._find_knight_squares())
+    return move_set
+
+  def _build_rook_move_set(self):
+    move_set = []
+    move_set.extend(self._find_vertical_squares(range_limit=self.UNLIMITED_RANGE, direction_flag=self.MOVE_UP))
+    move_set.extend(self._find_vertical_squares(range_limit=self.UNLIMITED_RANGE, direction_flag=self.MOVE_DOWN))
+    move_set.extend(self._find_horizontal_squares(range_limit=self.UNLIMITED_RANGE, direction_flag=self.MOVE_LEFT))
+    move_set.extend(self._find_horizontal_squares(range_limit=self.UNLIMITED_RANGE, direction_flag=self.MOVE_RIGHT))
+    return move_set
+
+  def _build_queen_move_set(self):
+    move_set = []
+    move_set.extend(self._find_diagonal_squares(range_limit=self.UNLIMITED_RANGE, x_direction_flag=self.MOVE_RIGHT, y_direction_flag=self.MOVE_UP))
+    move_set.extend(self._find_diagonal_squares(range_limit=self.UNLIMITED_RANGE, x_direction_flag=self.MOVE_LEFT, y_direction_flag=self.MOVE_UP))
+    move_set.extend(self._find_diagonal_squares(range_limit=self.UNLIMITED_RANGE, x_direction_flag=self.MOVE_RIGHT, y_direction_flag=self.MOVE_DOWN))
+    move_set.extend(self._find_diagonal_squares(range_limit=self.UNLIMITED_RANGE, x_direction_flag=self.MOVE_LEFT, y_direction_flag=self.MOVE_DOWN))
+    move_set.extend(self._find_vertical_squares(range_limit=self.UNLIMITED_RANGE, direction_flag=self.MOVE_UP))
+    move_set.extend(self._find_vertical_squares(range_limit=self.UNLIMITED_RANGE, direction_flag=self.MOVE_DOWN))
+    move_set.extend(self._find_horizontal_squares(range_limit=self.UNLIMITED_RANGE, direction_flag=self.MOVE_LEFT))
+    move_set.extend(self._find_horizontal_squares(range_limit=self.UNLIMITED_RANGE, direction_flag=self.MOVE_RIGHT))
+    return move_set
+
+  def _build_king_move_set(self):
+    move_set = []
+    move_set.extend(self._find_diagonal_squares(range_limit=1, x_direction_flag=self.MOVE_RIGHT, y_direction_flag=self.MOVE_UP))
+    move_set.extend(self._find_diagonal_squares(range_limit=1, x_direction_flag=self.MOVE_LEFT, y_direction_flag=self.MOVE_UP))
+    move_set.extend(self._find_diagonal_squares(range_limit=1, x_direction_flag=self.MOVE_RIGHT, y_direction_flag=self.MOVE_DOWN))
+    move_set.extend(self._find_diagonal_squares(range_limit=1, x_direction_flag=self.MOVE_LEFT, y_direction_flag=self.MOVE_DOWN))
+    move_set.extend(self._find_vertical_squares(range_limit=1, direction_flag=self.MOVE_UP))
+    move_set.extend(self._find_vertical_squares(range_limit=1, direction_flag=self.MOVE_DOWN))
+    move_set.extend(self._find_horizontal_squares(range_limit=1, direction_flag=self.MOVE_LEFT))
+    move_set.extend(self._find_horizontal_squares(range_limit=1, direction_flag=self.MOVE_RIGHT))
+    # todo - add castle squares
+    return move_set
+
   def _find_en_passant_squares(self):
     available_squares = []
     en_passant_columns = [col for col in range(self.piece.column-1, self.piece.column+2, 2) if col <= 7 and col >= 0]
@@ -57,7 +101,7 @@ class MoveValidator:
       piece_in_square = self._piece_in_square(new_row, self.piece.column)
       if not piece_in_square:
         available_squares.append((new_row, self.piece.column))
-      elif piece_in_square.team != self.piece.team:
+      elif self._piece_is_enemy(piece_in_square):
         if self.piece.piece_type != 'P':  # Pawns can only capture diagonally
           available_squares.append((new_row, self.piece.column))
         break
@@ -74,7 +118,7 @@ class MoveValidator:
       piece_in_square = self._piece_in_square(self.piece.row, new_column)
       if not piece_in_square:
         available_squares.append((self.piece.row, new_column))
-      elif piece_in_square.team != self.piece.team:
+      elif self._piece_is_enemy(piece_in_square):
         available_squares.append((self.piece.row, new_column))
         break
       elif piece_in_square.team == self.piece.team:
@@ -94,11 +138,34 @@ class MoveValidator:
       if not piece_in_square:
         if self.piece.piece_type != 'P':  # Pawns can only move diagonally when capturing
           available_squares.append((new_row, new_column))
-      elif piece_in_square.team != self.piece.team:
+      elif self._piece_is_enemy(piece_in_square):
         available_squares.append((new_row, new_column))
         break
       elif piece_in_square.team == self.piece.team:
         break
+    return available_squares
+
+  def _find_knight_squares(self):
+    available_squares = []
+    move_deltas = (
+      (2, 1),
+      (1, 2),
+      (-2, 1),
+      (-1, 2),
+      (-2, -1),
+      (-1, -2),
+      (2, -1),
+      (1, -2),
+    )
+    for row_delta, col_delta in move_deltas:
+      new_row = self.piece.row + row_delta
+      new_column = self.piece.column + col_delta
+      if not self._coordinate_out_of_bounds(new_row) and not self._coordinate_out_of_bounds(new_column):
+        piece_in_square = self._piece_in_square(new_row, new_column)
+        if not piece_in_square:
+          available_squares.append((new_row, new_column))
+        elif self._piece_is_enemy(piece_in_square):
+          available_squares.append((new_row, new_column))
     return available_squares
 
   def _piece_is_enemy(self, piece):
@@ -112,13 +179,32 @@ class MoveValidator:
     return True if coordinate > 7 or coordinate < 0 else False
 
   def move_is_valid(self):
+    if self._move_is_in_move_set():
+      pass
+
+  def _move_is_in_move_set(self):
+    move_set = self._build_move_set()
+    return True if (self.new_row, self.new_column) in move_set else False
+
+  def _build_move_set(self)  
     if self.piece.piece_type == 'P':
       move_set = self._build_pawn_move_set()
     elif self.piece.piece_type == 'B':
       move_set = self._build_bishop_move_set()
-    
+    elif self.piece.piece_type == 'KN':
+      move_set = self._build_knight_move_set()
+    elif self.piece.piece_type == 'R':
+      move_set = self._build_rook_move_set()
+    elif self.piece.piece_type == 'Q':
+      move_set = self._build_queen_move_set()
+    elif self.piece.piece_type == 'K':
+      move_set = self._build_king_move_set()
     else:
-      return True
+      raise ValueError(f'Unexpected piece type: {self.piece.piece_type}')
+
+    
+
+
 
   def _piece_in_square(self, row, column, enemies_only=False):
     try:
@@ -196,7 +282,6 @@ def test__find_vertical_squares(team, row, column, range_limit, piece_in_square,
   squares = validator._find_vertical_squares(range_limit, validator.forward_movement)  # Add boundary checking
 
   assert squares == expected_squares
-
 
 @pytest.mark.parametrize('team, row, column, range_limit, direction_flag, piece_in_square, expected_squares', [
   # Right movement test cases
@@ -290,7 +375,6 @@ def test__find_horizontal_squares(team, row, column, range_limit, direction_flag
 
   assert squares == expected_squares
 
-
 @pytest.mark.parametrize('team, row, column, range_limit, x_direction_flag, y_direction_flag, piece_in_square, expected_squares', [
   # Unlimited range, all directions test cases
   (
@@ -366,7 +450,6 @@ def test__find_diagonal_squares(team, row, column, range_limit, x_direction_flag
 
   assert squares == expected_squares
 
-
 @pytest.mark.parametrize('team, row, column, piece_in_square, expected_squares', [
   (
     'B', 3, 3, Mock(piece_type='P', move_count=1), [
@@ -413,7 +496,6 @@ def test__find_en_passant_squares(team, row, column, piece_in_square, expected_s
   squares = validator._find_en_passant_squares()
 
   assert squares == expected_squares
-
 
 @pytest.mark.parametrize('team, row, column, move_count, get_pieces_values, expected_squares', [
   (
@@ -549,9 +631,18 @@ def test__build_pawn_move_set(team, row, column, move_count, get_pieces_values, 
   assert len(squares) == len(expected_squares)
 
 @pytest.mark.parametrize('team, row, column, get_pieces_values, expected_squares', [
+  # Unlocked test case
   (
-    'B', 3, 3, (), [
+    'B', 3, 3, None, [
       (4, 4), (5, 5), (6, 6), (7, 7), (4, 2), (5, 1), (6, 0), (2, 2), (1, 1), (0, 0), (2, 4), (1, 5), (0, 6)
+    ]
+  ),
+  # Partially blocked test case
+  (
+    'B', 3, 3, (
+        None, None, None, None, Mock(team='W'), None, Mock(team='B'), None, None, None
+      ), [
+        (4, 4), (5, 5), (6, 6), (7, 7), (4, 2), (2, 2), (1, 1), (0, 0), (2, 4)
     ]
   ),
 ])
@@ -560,9 +651,101 @@ def test__build_bishop_move_set(team, row, column, get_pieces_values, expected_s
   piece = Mock(team=team, row=row, column=column, piece_type='B')
 
   validator = MoveValidator(all_pieces, piece, -1, -1)
-  #validator._piece_in_square = Mock(side_effect=get_pieces_values)
-  validator._piece_in_square = Mock(return_value=None)
+  if not get_pieces_values:
+    validator._piece_in_square = Mock(return_value=None)
+  else:
+    validator._piece_in_square = Mock(side_effect=get_pieces_values)
   squares = validator._build_bishop_move_set()
+
+  assert set(squares) == set(expected_squares)
+  assert len(squares) == len(expected_squares)
+
+@pytest.mark.parametrize('team, row, column, get_pieces_values, expected_squares', [
+  (
+    'B', 3, 3, None, [
+      (5, 4), (4, 5), (2, 5), (1, 4), (1, 2), (2, 1), (4, 1), (5, 2)
+  ]),
+  (
+    'B', 0, 0, None, [
+      (1, 2), (2, 1)
+  ]),
+  (
+    'B', 7, 7, (
+      Mock(team='B'), Mock(team='W'), 
+    ), [
+      (6, 5)
+  ]),
+])
+def test__find_knight_squares(team, row, column, get_pieces_values, expected_squares):
+  all_pieces = Mock()
+  piece = Mock(team=team, row=row, column=column)
+
+  validator = MoveValidator(all_pieces, piece, -1, -1)
+  if not get_pieces_values:
+    validator._piece_in_square = Mock(return_value=None)
+  else:
+    validator._piece_in_square = Mock(side_effect=get_pieces_values)
+  squares = validator._find_knight_squares()
+
+  assert set(squares) == set(expected_squares)
+  assert len(squares) == len(expected_squares)
+
+
+
+@pytest.mark.parametrize('team, row, column, get_pieces_values, expected_squares', [
+  (
+    'B', 3, 3, None, [
+      (0, 0), (1, 1), (2, 2), (4, 4), (5, 5), (6, 6), (7, 7), (6, 0), (5, 1), 
+      (4, 2), (2, 4), (1, 5), (0, 6), (7, 3), (6, 3), (5, 3), (4, 3), (2, 3), 
+      (1, 3), (0, 3), (3, 0), (3, 1), (3, 2), (3, 4), (3, 5), (3, 6), (3, 7),
+  ]),
+  (
+    'B', 3, 3, (
+      Mock(team='W'), None, Mock(team='W'), Mock(team='B'), Mock(team='B'), 
+      None, None, None, None, None, None, None, Mock(team='B'), None, None,
+      None, None,
+    ), [
+      (4, 4), (5, 1), (4, 2), (7, 3), (6, 3), (5, 3), (4, 3), 
+      (3, 4), (3, 5), (3, 6), (3, 7), (0, 3), (1, 3), (2, 3), 
+  ]),
+])
+def test__build_queen_move_set(team, row, column, get_pieces_values, expected_squares):
+  all_pieces = Mock()
+  piece = Mock(team=team, row=row, column=column)
+
+  validator = MoveValidator(all_pieces, piece, -1, -1)
+  if not get_pieces_values:
+    validator._piece_in_square = Mock(return_value=None)
+  else:
+    validator._piece_in_square = Mock(side_effect=get_pieces_values)
+  squares = validator._build_queen_move_set()
+
+  assert set(squares) == set(expected_squares)
+  assert len(squares) == len(expected_squares)
+
+
+@pytest.mark.parametrize('team, row, column, get_pieces_values, expected_squares', [
+  (
+    'B', 3, 3, None, [
+      (4, 4), (4, 2), (2, 4), (2, 2), (4, 3), (2, 3), (3, 2), (3, 4)
+  ]),
+  (
+    'B', 3, 3, (
+      None, None, Mock(team='W'), Mock(team='B'), Mock(team='W'), Mock(team='B'), Mock(team='B'), Mock(team='W')
+    ), [
+      (4, 4), (4, 2), (2, 4), (4, 3), (3, 4)
+  ]),
+])
+def test__build_king_move_set(team, row, column, get_pieces_values, expected_squares):
+  all_pieces = Mock()
+  piece = Mock(team=team, row=row, column=column)
+
+  validator = MoveValidator(all_pieces, piece, -1, -1)
+  if not get_pieces_values:
+    validator._piece_in_square = Mock(return_value=None)
+  else:
+    validator._piece_in_square = Mock(side_effect=get_pieces_values)
+  squares = validator._build_king_move_set()
 
   assert set(squares) == set(expected_squares)
   assert len(squares) == len(expected_squares)
